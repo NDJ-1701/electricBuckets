@@ -237,8 +237,10 @@ HVAC = Panel(
         # (3, "dehumidifiers", 3130, 1, 2, 2),
         # (1, "receptacle", 360, 0, 1, 1)
         ##### this is the as-designed version with more realistic loads for the ACs:
-        (4, "AC", 11250, 1, 3, -1),
-        (2, "HP", 12250, 1, 3, -1),
+        (3, "AC", 18955.6, 1, 3, -1),
+        #(2, "AC", 18955.6*.35, 1, 3, -1), # diversity factor 0.35
+        (1, "HP", 9228.4, 1, 3, -1),
+        #(1, "HP", 9228.4*.35, 1, 3, -1), # diversity factor 0.35
         (4, "dehumidifiers", 3130, 1, 2, 0),
         (3, "dehumidifiers", 3130, 1, 2, 1),
         (3, "dehumidifiers", 3130, 1, 2, 2),
@@ -573,11 +575,10 @@ def calculate(combo, static_combo):
 
     result = max((iL1,iL2,iL3))
     values = {"iL1": iL1, "iL2": iL2, "iL3": iL3}
-    highest_keys = [key for key, value in values.items() if value == result]
 
     if result < prev_best:
         prev_best = result
-        if result <= result_maximum:
+        if result <= result_maximum or attempts == 0:
             biA = iA
             biB = iB
             biC = iC
