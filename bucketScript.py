@@ -23,7 +23,7 @@ bL3N = 99999
 
 variable_setup = []
 static_setup = []
-active_panel = None
+active_panels = []
 result_maximum = 99999
 attempts = 0
 possibilities = 0
@@ -87,7 +87,15 @@ class Panel:
         self.restricted_circuits = restricted_circuits if restricted_circuits is not None else []
         self.as_built_circuits = as_built_circuits if as_built_circuits is not None else []
         self.subpanels = []  # Initialize subpanels as an empty list
-    
+        self.allPanels = [self]
+        self.combos = []
+        self.all_distributions = []
+        self.combos = None
+        self.allCombosList = []
+        self.comboCount = 0
+        self.generateCombos()
+        #self.getCombosIterator()
+
     def append_from(self, other_panel):
         # Append circuits from other panel
         self.variable_circuits.extend(other_panel.variable_circuits)
@@ -96,11 +104,47 @@ class Panel:
     def add_subpanel(self, subpanel):
         """Add a subpanel to the list of subpanels."""
         self.subpanels.append(subpanel)
+        self.allPanels.append(subpanel)
+        self.allCombosList.append(subpanel.combos) # add iterator to list of iterators  WARNING !!!!! THIS DOES NOT PROCESS SUB PANELS OF A SUB PANEL, WHICH IS TECHNICALLY A BUG 
+        self.comboCount *= subpanel.comboCount
     
     def use_as_built(self):
         self.variable_circuits = []
         self.restricted_circuits = self.as_built_circuits
 
+    def generateCombos(self):
+        all_distributions = self.all_distributions
+        for device_args in self.variable_circuits:
+            count = device_args[0]
+            poles = device_args[4]
+            if poles == 1:
+                all_distributions.append( [(i, count - i) for i in range(count + 1)] )
+            elif poles == 2:
+                all_distributions.append( [(i, j, count - i - j) for i in range(count + 1) for j in range(count - i + 1)] )
+            elif poles == 3:
+                all_distributions.append( [(count, count, count)] )
+
+        for device_args in self.restricted_circuits:
+            count = device_args[0]
+            poles = device_args[4]
+            position = device_args[5]
+            if poles == 1:
+                all_distributions.append( [(count if position == 0 else 0, count if position == 1 else 0)] )
+            elif poles == 2:
+                all_distributions.append( [(count if position == 0 else 0, count if position == 1 else 0, count if position == 2 else 0)] )
+            elif poles == 3:
+                all_distributions.append( [(count, count, count)] )
+
+        self.combos = it_product(*all_distributions)
+        self.allCombosList.append(self.combos)
+        
+        self.comboCount = 1
+        for item in all_distributions:
+            setLength = len(item)
+            self.comboCount *= setLength # possibilities must start out equal to 1
+
+    def getCombosIterator(self):
+        return it_product(*self.allCombosList)
 
     def __repr__(self):
         return (f"Panel(limit_to_results_under: {self.limit_to_results_under}, "
@@ -412,17 +456,30 @@ TESTER = Panel(
 )
 
 def print_scheme(result, combo):
-    firstSet = len(variable_setup)
-    for index, arrangment in enumerate(combo):
-        name = None
-        if index < firstSet:
-            name = variable_setup[index][1]
-        else:
-            name = static_setup[index - firstSet][1]
-        name_parts = name.split()
-        initials = "".join([part[0].upper() for part in name_parts])
-        print_colored(initials, "yellow", end="")
-        print_colored(arrangment, " ", "yellow", end="")
+    for panelIndex, panel in enumerate(active_panel.allPanels):
+        setup = panel.variable_circuits + panel.restricted_circuits
+        print(panel.name)
+        for dev_num, dev_args in enumerate(setup):
+            name = dev_args[1]
+            dist = combo[panelIndex][dev_num]
+            name_parts = name.split()
+            initials = "".join([part[0].upper() for part in name_parts])
+            print_colored(initials, "yellow", end="")
+            print_colored(dist, " ", "yellow", end="")
+        print()
+            
+
+    # firstSet = len(variable_setup)
+    # for index, arrangment in enumerate(combo):
+    #     name = None
+    #     if index < firstSet:
+    #         name = variable_setup[index][1]
+    #     else:
+    #         name = static_setup[index - firstSet][1]
+    #     name_parts = name.split()
+    #     initials = "".join([part[0].upper() for part in name_parts])
+    #     print_colored(initials, "yellow", end="")
+    #     print_colored(arrangment, " ", "yellow", end="")
     print()
 
 
@@ -508,7 +565,7 @@ def optimize(iL3N, iA, iB, iC, iL2N):
     print(f"Minimum difference between the three: {min_difference}")
     print_colored(f"Improvement over initial: {worst1 - worst2:.2f} which is a reduction of {(1-worst2/worst1)*100:.1f}%", "red")
 
-def calculate(combo, static_combo):
+def calculate(combo):
     global prev_best, biA, biB, biC, biL2N, biL3N
     l3_l1 = 0
     l1_l2 = 0
@@ -522,36 +579,34 @@ def calculate(combo, static_combo):
     motor_l2_n = 0
     motor_l3_n = 0
 
-    combo = combo + tuple(static_combo)
+    for panelIndex, panel in enumerate(active_panel.allPanels):
+        setup = panel.variable_circuits + panel.restricted_circuits
+        for dev_num, dev_args in enumerate(setup):
+            dist = combo[panelIndex][dev_num]
+            voltAmps = dev_args[2]
+            is_motor = dev_args[3]
+            poles = dev_args[4]
 
-    setup = variable_setup + static_setup
-
-    for dev_num, dev_args in enumerate(setup):
-        dist = combo[dev_num]
-        voltAmps = dev_args[2]
-        is_motor = dev_args[3]
-        poles = dev_args[4]
-
-        if poles == 1:
-            l3_n += voltAmps * dist[0] # 0 is L3n, which comes first, it's on phase A
-            if is_motor: motor_l3_n = max(motor_l3_n, voltAmps * 0.25 if dist[0] > 0 else 0)
-            l2_n += voltAmps * dist[1] # 1 is L2n, which comes second, it's on phase C
-            if is_motor: motor_l2_n = max(motor_l2_n, voltAmps * 0.25 if dist[1] > 0 else 0)
-        elif poles == 2:
-            l3_l1 += voltAmps * dist[0]
-            if is_motor: motor_l3_l1 = max(motor_l3_l1, voltAmps * 0.25 if dist[0] > 0 else 0)
-            l1_l2 += voltAmps * dist[1]
-            if is_motor: motor_l1_l2 = max(motor_l1_l2, voltAmps * 0.25 if dist[1] > 0 else 0)
-            l2_l3 += voltAmps * dist[2]
-            if is_motor: motor_l2_l3 = max(motor_l2_l3, voltAmps * 0.25 if dist[2] > 0 else 0)
-        elif poles == 3:
-            split_amps = voltAmps / 3
-            l3_l1 += split_amps * dist[0]
-            if is_motor: motor_l3_l1 = max(motor_l3_l1, split_amps * 0.25 if dist[0] > 0 else 0)
-            l1_l2 += split_amps * dist[1]
-            if is_motor: motor_l1_l2 = max(motor_l1_l2, split_amps * 0.25 if dist[1] > 0 else 0)
-            l2_l3 += split_amps * dist[2]
-            if is_motor: motor_l2_l3 = max(motor_l2_l3, split_amps * 0.25 if dist[2] > 0 else 0)
+            if poles == 1:
+                l3_n += voltAmps * dist[0] # 0 is L3n, which comes first, it's on phase A
+                if is_motor: motor_l3_n = max(motor_l3_n, voltAmps * 0.25 if dist[0] > 0 else 0)
+                l2_n += voltAmps * dist[1] # 1 is L2n, which comes second, it's on phase C
+                if is_motor: motor_l2_n = max(motor_l2_n, voltAmps * 0.25 if dist[1] > 0 else 0)
+            elif poles == 2:
+                l3_l1 += voltAmps * dist[0]
+                if is_motor: motor_l3_l1 = max(motor_l3_l1, voltAmps * 0.25 if dist[0] > 0 else 0)
+                l1_l2 += voltAmps * dist[1]
+                if is_motor: motor_l1_l2 = max(motor_l1_l2, voltAmps * 0.25 if dist[1] > 0 else 0)
+                l2_l3 += voltAmps * dist[2]
+                if is_motor: motor_l2_l3 = max(motor_l2_l3, voltAmps * 0.25 if dist[2] > 0 else 0)
+            elif poles == 3:
+                split_amps = voltAmps / 3
+                l3_l1 += split_amps * dist[0]
+                if is_motor: motor_l3_l1 = max(motor_l3_l1, split_amps * 0.25 if dist[0] > 0 else 0)
+                l1_l2 += split_amps * dist[1]
+                if is_motor: motor_l1_l2 = max(motor_l1_l2, split_amps * 0.25 if dist[1] > 0 else 0)
+                l2_l3 += split_amps * dist[2]
+                if is_motor: motor_l2_l3 = max(motor_l2_l3, split_amps * 0.25 if dist[2] > 0 else 0)
 
     # keep the largest motor on phases A and C, whether those are on L-N or L-N locations
     motor_l3_l1, motor_l3_n = (0, motor_l3_n) if motor_l3_l1 < motor_l3_n else (motor_l3_l1, 0)
@@ -620,7 +675,8 @@ def display_room_menu():
         5: ("F1_NoLights", F1_NoLights),
         6: ("VEG", VEG),
         7: ("GARAGE", GARAGE),
-        8: ("All Rooms", "ALL")
+        8: ("All Rooms", "ALL"),
+        9: ("Tester", TESTER)
     }
     
     while True:
@@ -642,8 +698,8 @@ def display_room_menu():
                 mainPanel = Panel()
                 # Add all individual rooms to mainPanel
                 for _, (_, setup) in rooms.items():
-                    if setup != "ALL":  # Skip the "All Rooms" option
-                        mainPanel.append_from(setup)
+                    if setup != "ALL" and setup != "Tester":  # Skip the "All Rooms" option
+                        mainPanel.add_subpanel(setup)
                 return mainPanel
             else:
                 return rooms[choice][1]  # Return the selected setup
@@ -677,45 +733,16 @@ def main():
     # mainPanel.append_from(GARAGE)
     selected_setup = display_room_menu()
     loadSetup(selected_setup)
-
-    static_combo = []
-    for device_args in static_setup:
-        count = device_args[0]
-        poles = device_args[4]
-        position = device_args[5]
-        if poles == 1:
-            static_combo.append( (count if position == 0 else 0, count if position == 1 else 0) )
-        elif poles == 2:
-            static_combo.append( (count if position == 0 else 0, count if position == 1 else 0, count if position == 2 else 0) )
-        elif poles == 3:
-            static_combo.append( (count, count, count) )
-
-    all_distributions = []
-    for device_args in variable_setup:
-        count = device_args[0]
-        poles = device_args[4]
-        if poles == 1:
-            all_distributions.append( [(i, count - i) for i in range(count + 1)] )
-        elif poles == 2:
-            all_distributions.append( [(i, j, count - i - j) for i in range(count + 1) for j in range(count - i + 1)] )
-        elif poles == 3:
-            all_distributions.append( [(count, count, count)] )
-
-    all_combinations = it_product(*all_distributions)
     
-    possibilities = 1
-    for item in all_distributions:
-        setLength = len(item)
-        possibilities *= setLength # possibilities must start out equal to 1
-    
+    possibilities = active_panel.comboCount
     print_colored(possibilities, " combinations will be tested.", "magenta")
     time.sleep(1)
 
     #start_index = 0
 
-    for combo in all_combinations:
+    for combo in active_panel.getCombosIterator():
     #for index, combo in enumerate(all_combinations[2:], start=start_index):
-        (result, new_combo) = calculate(combo, static_combo)
+        (result, new_combo) = calculate(combo)
         # if result < prev_best: ########## moved this code into calculate so I could print more stuff
         #     prev_best = result
         #     print(result, new_combo)
