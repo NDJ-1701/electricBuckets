@@ -167,6 +167,35 @@ def loadSetup(panel: Panel):
     static_setup = panel.restricted_circuits
     active_panel = panel
 
+
+# these are all the individual as-designed results and the combined as-designed result.
+# office = 63.6781
+# = 63.6781
+
+# officeAC = 6.6576
+# = 6.6576
+
+# hvac = 426.6197
+# = 426.6197
+
+# flower = 181.0875
+# = 181.0875
+
+# flowerNL = 66.8451
+# = 66.8451
+
+# veg = 116.1013
+# = 116.1013
+
+# garage = 27.5
+# = 27.5
+
+# office + officeAC + hvac + flower + flowerNL + veg + garage
+# = 888.4893
+
+# calculatedCombined = 834.8292
+# = 834.8292
+
 OFFICE = Panel(
     ########### WARNING: THIS PANEL IS QUIRKY. ALL 2 POLE ITEMS MUST BE IN LOCATION 2, THERE IS ONLY ONE OPTION
     #### THIS PANEL IS BALANCED AT 62.3A, BUT IT PUTS ALL THE POWER ON L2/L3. IT MAY BE BENEFICIAL TO PUT POWER FROM OTHER PANELS ON L3/L1+L1/L2
@@ -283,11 +312,11 @@ OFFICE_AC = Panel(
     # RESTRICTED CIRCUITS
     restricted_circuits = [
         # (1, "AC", 12000, 1, 3, -1), # this is the old value that is wrong
-        (1, "AC", 2213.28, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
+        (1, "AC", 2214, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
     ],
     as_built_circuits = [
         # (1, "AC", 12000, 1, 3, -1), # this is the old value that is wrong
-        (1, "AC", 2213.28, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
+        (1, "AC", 2214, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
     ],
 )
 
@@ -307,8 +336,7 @@ GARAGE = Panel(
     ],
     as_built_circuits = [
         (1, "RO PUMP", 2040, 1, 2, 2),
-        #(1, "receptacles", 810, 1, 1, 0),
-        #(1, "receptacles", 810, 1, 1, 1)
+        (1, "receptacles", 1620, 1, 1, 0)
     ],
 )
 
@@ -350,10 +378,10 @@ HVAC = Panel(
         # (1, "receptacle", 360, 0, 1, 1)
     ],
     as_built_circuits = [
-        (3, "AC", 18955.6, 1, 3, -1),
-        #(2, "AC", 18955.6*.35, 1, 3, -1), # diversity factor 0.35
-        (1, "HP", 9228.4, 1, 3, -1),
-        #(1, "HP", 9228.4*.35, 1, 3, -1), # diversity factor 0.35
+        (3, "AC", 22365, 1, 3, -1), # 53.8 on spec (22365), otherwise 10.9 blower, 4.0 fan, 34.6 comp = 49.5 (20577)
+        (1, "AC", 22365, 1, 3, -1), # diversity factor 0.35
+        (1, "HP", 24443, 1, 3, -1), # 58.8A (24443) on spec, otherwise 14.5 blower, 5.4 fan, 34.6 compressor = 54.5A (22656)
+        (1, "HP", 24443, 1, 3, -1), # diversity factor 0.35
         (4, "dehumidifiers", 3130, 1, 2, 0),
         (3, "dehumidifiers", 3130, 1, 2, 1),
         (3, "dehumidifiers", 3130, 1, 2, 2),
@@ -452,10 +480,9 @@ F1_NoLights = Panel(
         # (1, "co2 purge fan", 1284, 1, 2, 1),
     ],
     as_built_circuits = [
-            # AS-BUILT:
-        # (4, "Rack Lights", 5040, 0, 2, PA),
-        # (2, "Rack Lights", 5040, 0, 2, PB),
-        # (4, "Rack Lights", 5040, 0, 2, PC),
+        #(4, "Rack Lights", 5040, 0, 2, PA),
+        #(2, "Rack Lights", 5040, 0, 2, PB),
+        #(4, "Rack Lights", 5040, 0, 2, PC),
         (2, "Rack Receptacles", 2160, 0, 1, AN),
         (3, "Rack Receptacles", 2160, 0, 1, CN),
         (1, "co2 controller", 180, 0, 1, AN),
@@ -533,9 +560,9 @@ VEG = Panel(
         (1, "Daikin", 3063.8298, 1, 3, -1),
 
         (1, "wall receptacle", 360, 0, 1, 1),
-        (1, "door receptacle", 360, 0, 1, 1),
-        (1, "sump pump", 600, 1, 1, 0),
-        (1, "work lights", 360, 0, 1, 0),
+        (1, "door receptacle", 360, 0, 1, 0),
+        (1, "sump pump", 600, 1, 1, 1),
+        (1, "work lights", 360, 0, 1, 1),
     ]
 )
 
