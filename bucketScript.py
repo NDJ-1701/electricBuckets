@@ -21,6 +21,8 @@ biC = 99999
 bL2N = 99999
 bL3N = 99999
 
+USE_AS_BUILT = True
+
 variable_setup = []
 static_setup = []
 active_panels = []
@@ -93,8 +95,11 @@ class Panel:
         self.combos = None
         self.allCombosList = []
         self.comboCount = 0
-        self.generateCombos()
         #self.getCombosIterator()
+        global USE_AS_BUILT
+        if USE_AS_BUILT:
+            self.use_as_built()
+        self.generateCombos()
 
     def append_from(self, other_panel):
         # Append circuits from other panel
@@ -227,7 +232,45 @@ OFFICE = Panel(
     (1, "HP", 1700, 1, 2, 2), 
     (1, "Dehu + air handler", 1830, 1, 2, 2),
     (1, "Dehu + air handler", 1830, 1, 2, 2)
-    ]
+    ],
+    as_built_circuits  = [
+    (1, "unknown load", 85, 0, 1, 0),
+    (1, "left of cage lights", 100, 0, 1, 0),
+
+    (1, "network receptacles north", 150, 0, 1, 1),
+    (1, "network recept", 150, 0, 1, 0),
+
+    (1, "dry room recep1", 150, 0, 1, 1),
+    (1, "dry room recep2", 150, 0, 1, 0),
+    (1, "dry room recep3", 150, 0, 1, 0),
+    (1, "dry room recep4", 150, 0, 1, 1),
+    (1, "dry room recep5", 150, 0, 1, 0),
+    
+
+    (1, "fire panel", 180, 0, 1, 0),
+    (1, "front bathroom receptacle", 200, 0, 1, 0),
+    (1, "top bathroom light", 250, 0, 1, 0),
+    (1, "front bathroom light and fan and entryway", 250, 0, 1, 1),
+    
+    (1, "office receptacles and exit sign", 250, 0, 1, 1),
+    (1, "entry receptacles", 250, 0, 1, 1),
+
+    (1, "stairway and office lights", 262, 0, 1, 0),
+    (1, "patio light", 280, 0, 1, 0),
+    (1, "dry room side lighting", 280, 0, 1, 1),
+    (1, "recept cage", 360, 0, 1, 0),
+    (1, "recept main office", 360, 0, 1, 0),
+    (1, "shop sink recept", 360, 0, 1, 1),
+    (1, "entry light", 490, 0, 1, 0),
+    (1, "dry and hall light", 495, 0, 1, 1),
+    (1, "inner office receptacles", 500, 0, 1, 1),
+
+    (1, "AC", 1170, 1, 2, 2), # all 2 pole items must be L2-L3 on a 2 pole panel.
+    (1, "mini split", 1935, 1, 2, 2),
+    (1, "HP", 1700, 1, 2, 2), 
+    (1, "Dehu + air handler", 1830, 1, 2, 2),
+    (1, "Dehu + air handler", 1830, 1, 2, 2)
+    ],
 )
 
 OFFICE_AC = Panel(
@@ -241,7 +284,11 @@ OFFICE_AC = Panel(
     restricted_circuits = [
         # (1, "AC", 12000, 1, 3, -1), # this is the old value that is wrong
         (1, "AC", 2213.28, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
-    ]
+    ],
+    as_built_circuits = [
+        # (1, "AC", 12000, 1, 3, -1), # this is the old value that is wrong
+        (1, "AC", 2213.28, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
+    ],
 )
 
 GARAGE = Panel(
@@ -249,15 +296,20 @@ GARAGE = Panel(
     limit_to_results_under = 300,
     # (count, label, voltAmps, is_motor, poles, assignment)
     variable_circuits = [
-    # (1, "RO PUMP", 2040, 1, 2, -1), ## note this is a single phase panel, so all 2 pole breakers must be set to the C phase
-    (1, "receptacles", 1620, 1, 1, -1) 
+        # (1, "RO PUMP", 2040, 1, 2, -1), ## note this is a single phase panel, so all 2 pole breakers must be set to the C phase
+        (1, "receptacles", 1620, 1, 1, -1) 
     ],
     # RESTRICTED CIRCUITS
     restricted_circuits = [
-    (1, "RO PUMP", 2040, 1, 2, 2),
-    #(1, "receptacles", 810, 1, 1, 0),
-    #(1, "receptacles", 810, 1, 1, 1)
-    ]
+        (1, "RO PUMP", 2040, 1, 2, 2),
+        #(1, "receptacles", 810, 1, 1, 0),
+        #(1, "receptacles", 810, 1, 1, 1)
+    ],
+    as_built_circuits = [
+        (1, "RO PUMP", 2040, 1, 2, 2),
+        #(1, "receptacles", 810, 1, 1, 0),
+        #(1, "receptacles", 810, 1, 1, 1)
+    ],
 )
 
 HVAC = Panel(
@@ -296,6 +348,16 @@ HVAC = Panel(
         # (4, "dehumidifiers", 3130, 1, 2, 1),
         # (2, "dehumidifiers", 3130, 1, 2, 2),
         # (1, "receptacle", 360, 0, 1, 1)
+    ],
+    as_built_circuits = [
+        (3, "AC", 18955.6, 1, 3, -1),
+        #(2, "AC", 18955.6*.35, 1, 3, -1), # diversity factor 0.35
+        (1, "HP", 9228.4, 1, 3, -1),
+        #(1, "HP", 9228.4*.35, 1, 3, -1), # diversity factor 0.35
+        (4, "dehumidifiers", 3130, 1, 2, 0),
+        (3, "dehumidifiers", 3130, 1, 2, 1),
+        (3, "dehumidifiers", 3130, 1, 2, 2),
+        (1, "receptacle", 360, 0, 1, 1)
     ]
 )
 
@@ -338,6 +400,18 @@ F1 = Panel(
         # (1, "general receptacles", 360, 0, 1, 1),
         # (1, "sump pump", 600, 1, 1, 1),
         # (1, "co2 purge fan", 1284, 1, 2, 1),
+    ],
+    as_built_circuits = [
+        (4, "Rack Lights", 5040, 0, 2, PA),
+        (2, "Rack Lights", 5040, 0, 2, PB),
+        (4, "Rack Lights", 5040, 0, 2, PC),
+        (2, "Rack Receptacles", 2160, 0, 1, AN),
+        (3, "Rack Receptacles", 2160, 0, 1, CN),
+        (1, "co2 controller", 180, 0, 1, AN),
+        (1, "general lighting", 280, 0, 1, AN),
+        (1, "general receptacles", 360, 0, 1, CN),
+        (1, "sump pump", 600, 1, 1, CN),
+        (1, "co2 purge fan", 1284, 1, 2, PB)
     ]
 )
 
@@ -376,6 +450,19 @@ F1_NoLights = Panel(
         # (1, "general receptacles", 360, 0, 1, 1),
         # (1, "sump pump", 600, 1, 1, 1),
         # (1, "co2 purge fan", 1284, 1, 2, 1),
+    ],
+    as_built_circuits = [
+            # AS-BUILT:
+        # (4, "Rack Lights", 5040, 0, 2, PA),
+        # (2, "Rack Lights", 5040, 0, 2, PB),
+        # (4, "Rack Lights", 5040, 0, 2, PC),
+        (2, "Rack Receptacles", 2160, 0, 1, AN),
+        (3, "Rack Receptacles", 2160, 0, 1, CN),
+        (1, "co2 controller", 180, 0, 1, AN),
+        (1, "general lighting", 280, 0, 1, AN),
+        (1, "general receptacles", 360, 0, 1, CN),
+        (1, "sump pump", 600, 1, 1, CN),
+        (1, "co2 purge fan", 1284, 1, 2, PB)
     ]
 )
 
@@ -432,6 +519,23 @@ VEG = Panel(
         # (1, "door receptacle", 360, 0, 1, 1),
         # (1, "sump pump", 600, 1, 1, 0),
         # (1, "work lights", 360, 0, 1, 0),
+    ],
+    as_built_circuits = [
+        (4, "Rack Lights", 2520, 0, 2, 0),
+        (2, "Rack Lights", 2520, 0, 2, 1),
+        (2, "Rack Lights", 2520, 0, 2, 2),
+
+        (1, "Rack Receptacles", 2160, 0, 1, 0),
+        (1, "Rack Receptacles", 2160, 0, 1, 0),
+
+        (2, "Quest Dehus", 2700, 1, 2, 1),
+        (1, "Excel", 6666.6667, 1, 3, -1),
+        (1, "Daikin", 3063.8298, 1, 3, -1),
+
+        (1, "wall receptacle", 360, 0, 1, 1),
+        (1, "door receptacle", 360, 0, 1, 1),
+        (1, "sump pump", 600, 1, 1, 0),
+        (1, "work lights", 360, 0, 1, 0),
     ]
 )
 
@@ -698,7 +802,7 @@ def display_room_menu():
                 mainPanel = Panel()
                 # Add all individual rooms to mainPanel
                 for _, (_, setup) in rooms.items():
-                    if setup != "ALL" and setup != "Tester":  # Skip the "All Rooms" option
+                    if setup != "ALL" and _ != "Tester":  # Skip the "All Rooms" option & skip adding the Tester panel.
                         mainPanel.add_subpanel(setup)
                 return mainPanel
             else:
