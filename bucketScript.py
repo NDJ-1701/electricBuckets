@@ -21,7 +21,7 @@ biC = 99999
 bL2N = 99999
 bL3N = 99999
 
-USE_AS_BUILT = True
+USE_AS_BUILT = False
 
 variable_setup = []
 static_setup = []
@@ -169,22 +169,19 @@ def loadSetup(panel: Panel):
 
 
 # these are all the individual as-designed results and the combined as-designed result.
-# office = 63.6781
-# = 63.6781
+# office = 63.6781 (theory 36, 44%) can't improve because single phase. Could consider moving ACs off this panel.
 
-# officeAC = 6.6576
-# = 6.6576
+# officeAC = 19.8765, can't improve because 3 phase.
 
-# hvac = 426.6197
+# hvac = 426.6197, theory is 425
 # = 426.6197
 
-# flower = 181.0875
-# = 181.0875
+# flower = 181.0875 theory is 154.901/14.5%
 
-# flowerNL = 66.8451
+# flowerNL = 66.8451, theory is 48.545/27%
 # = 66.8451
 
-# veg = 116.1013
+# veg = 116.1013, theory is 103.656/10.7%
 # = 116.1013
 
 # garage = 27.5
@@ -196,6 +193,41 @@ def loadSetup(panel: Panel):
 # calculatedCombined = 834.8292
 # = 834.8292
 
+# 692 with reorganization & still 10 ton HP (326A hvac panel)
+# 674 with 7.5T heat pump (308A hvac panel)
+# 653 with re-optimized flower panel and 7.5
+# 662 with re-optimized veg and 7.5
+
+#
+# 641 with 7.5/536 and optimize veg (614 theory)
+# 650 with 7.5 & 536 watt lights, no optimize
+# 642 with 7.5 & 504 watt lights, no optimize (605 theory)
+
+# 633 with 7.5/536 and optimize F1 (614 theory)
+# 626 WITH 7.5/504 and optimizze F1 (605 theory)
+
+# 634 with 7.5/504 & optimize veg (605 theory)
+
+
+# Solo hvac panel is 227 A (off panel would be 113)
+# combo hvac panel is 308, so it would need to be a 350A panel
+
+# 668A @ 630 watts, 7.5 tons, optimized hvac+veg, with 657 theory
+# 638A @ 440 WATTS, 7.5 TONS, 588 THEORY: 619 OPTIMIZING VEG, 
+# 606A @ 440 watts, 7.5 tons, optimizing veg + hvac (1.7M combos) with 588 theory.
+# hvac is 1%, could be B loaded
+# F1 is 1.6%, could be B loaded
+# veg is 0.8%, could be B loaded
+# reorg is 673.32 amps, with a theorhetical of 638.68
+
+LIGHT_WATTAGE = 630
+
+HPTEN_LOW = 22656
+HPTEN_REAL = 24443
+HPSEVEN = 17584
+HEAT_PUMP_POWER = HPTEN_REAL
+AC_POWER_REAL = 22365
+
 OFFICE = Panel(
     ########### WARNING: THIS PANEL IS QUIRKY. ALL 2 POLE ITEMS MUST BE IN LOCATION 2, THERE IS ONLY ONE OPTION
     #### THIS PANEL IS BALANCED AT 62.3A, BUT IT PUTS ALL THE POWER ON L2/L3. IT MAY BE BENEFICIAL TO PUT POWER FROM OTHER PANELS ON L3/L1+L1/L2
@@ -203,25 +235,25 @@ OFFICE = Panel(
     limit_to_results_under = 300,
     # (count, label, voltAmps, is_motor, poles, assignment)
     variable_circuits = [
-    # (1, "unknown load", 85, 0, 1),
-    # (1, "left of cage lights", 100, 0, 1),
-    # (7, "various receptacles", 150, 0, 1),
-    # (1, "fire panel", 180, 0, 1),
-    # (1, "front bathroom receptacle", 200, 0, 1),
-    # (1, "front bathroom light and fan and entryway", 250, 0, 1),
-    # (3, "various lights and receptacles", 250, 0, 1),
-    # (1, "stairway and office lights", 262, 0, 1),
-    # (1, "patio light", 280, 0, 1),
-    # (1, "dry room side lighting", 280, 0, 1),
-    # (3, "var receptacles", 360, 0, 1),
-    # (1, "entry light", 490, 0, 1),
-    # (1, "dry and hall light", 495, 0, 1),
-    # (1, "inner office receptacles", 500, 0, 1),
+                # (1, "unknown load", 85, 0, 1),
+                # (1, "left of cage lights", 100, 0, 1),
+                # (7, "various receptacles", 150, 0, 1),
+                # (1, "fire panel", 180, 0, 1),
+                # (1, "front bathroom receptacle", 200, 0, 1),
+                # (1, "front bathroom light and fan and entryway", 250, 0, 1),
+                # (3, "various lights and receptacles", 250, 0, 1),
+                # (1, "stairway and office lights", 262, 0, 1),
+                # (1, "patio light", 280, 0, 1),
+                # (1, "dry room side lighting", 280, 0, 1),
+                # (3, "var receptacles", 360, 0, 1),
+                # (1, "entry light", 490, 0, 1),
+                # (1, "dry and hall light", 495, 0, 1),
+                # (1, "inner office receptacles", 500, 0, 1),
 
-    #(1, "AC", 1170, 1, 2),
-    #(1, "mini split", 1935, 1, 2),
-    #(1, "HP", 1700, 1, 2),
-    #(2, "Dehu + air handler", 1830, 1, 2)
+                # (1, "AC", 1170, 1, 2),
+                # (1, "mini split", 1935, 1, 2),
+                # (1, "HP", 1700, 1, 2),
+                # (2, "Dehu + air handler", 1830, 1, 2)
     ],
     # RESTRICTED CIRCUITS
     restricted_circuits = [
@@ -311,12 +343,12 @@ OFFICE_AC = Panel(
     ],
     # RESTRICTED CIRCUITS
     restricted_circuits = [
-        # (1, "AC", 12000, 1, 3, -1), # this is the old value that is wrong
-        (1, "AC", 2214, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
+        (1, "AC", 12000, 1, 3, -1), # this is the value existing on the plans, which is very close to the actual value of the veg AC which is 11390
+        #(1, "AC", 6610, 1, 3, -1), # this is the 15.9 measured load, times sqrt(3)*240
     ],
     as_built_circuits = [
-        # (1, "AC", 12000, 1, 3, -1), # this is the old value that is wrong
-        (1, "AC", 2214, 1, 3, -1), # this is the 15.9 FLA, times 0.58*240
+        (1, "AC", 12000, 1, 3, -1), # this is the value existing on the plans, which is very close to the actual value of the veg AC which is 11390
+        #(1, "AC", 6610, 1, 3, -1), # this is the 15.9 measured load, times sqrt(3)*240
     ],
 )
 
@@ -326,13 +358,14 @@ GARAGE = Panel(
     # (count, label, voltAmps, is_motor, poles, assignment)
     variable_circuits = [
         # (1, "RO PUMP", 2040, 1, 2, -1), ## note this is a single phase panel, so all 2 pole breakers must be set to the C phase
-        (1, "receptacles", 1620, 1, 1, -1) 
+        #(1, "receptacles", 1620, 1, 1, -1) 
     ],
     # RESTRICTED CIRCUITS
     restricted_circuits = [
         (1, "RO PUMP", 2040, 1, 2, 2),
-        #(1, "receptacles", 810, 1, 1, 0),
-        #(1, "receptacles", 810, 1, 1, 1)
+        #(1, "receptacles", 1620, 1, 1, 0)
+        (1, "receptacles", 810, 1, 1, 0),
+        (1, "receptacles", 810, 1, 1, 1)
     ],
     as_built_circuits = [
         (1, "RO PUMP", 2040, 1, 2, 2),
@@ -342,50 +375,110 @@ GARAGE = Panel(
 
 HVAC = Panel(
     name = "HVAC",
-    limit_to_results_under = 300,
+    limit_to_results_under = 400,
     # VARIABLE CIRCUITS
     # (count, label, voltAmps, is_motor, poles, assignment)
     variable_circuits = [
-        # (4, "AC", 4530, 1, 3, -1),
-        # (2, "HP", 6027, 1, 3, -1),
+        # (3, "AC", AC_POWER_REAL, 1, 3, -1),
+        # #(1, "AC", AC_POWER_REAL, 1, 3, -1), # diversity factor cancellation
+        # (1, "HP", HEAT_PUMP_POWER, 1, 3, -1),
+        # #(1, "HP", HEAT_PUMP_POWER, 1, 3, -1), #diversity factor cancellation
         # (10, "dehumidifiers", 3130, 1, 2, -1),
         # (1, "receptacle", 360, 0, 1, -1)
     ],
     # RESTRICTED CIRCUITS
     restricted_circuits = [
-        ##### this is the as-designed version:
-        # (4, "AC", 4530, 1, 3, -1),
-        # (2, "HP", 6027, 1, 3, -1),
+        ##### this is the reorganized version:
+        (3, "AC", AC_POWER_REAL, 1, 3, -1),
+        #(1, "AC", AC_POWER_REAL, 1, 3, -1), # diversity factor cancellation
+        (1, "HP", HEAT_PUMP_POWER, 1, 3, -1),
+        #(1, "HP", HEAT_PUMP_POWER, 1, 3, -1), #diversity factor cancellation
+        (4, "dehumidifiers", 3130, 1, 2, 0),
+        (4, "dehumidifiers", 3130, 1, 2, 1),
+        (2, "dehumidifiers", 3130, 1, 2, 2),
+        (1, "receptacle", 360, 0, 1, 1)
+    ],
+    as_built_circuits = [
+        (3, "AC", AC_POWER_REAL, 1, 3, -1), # 53.8 on spec (22365), otherwise 10.9 blower, 4.0 fan, 34.6 comp = 49.5 (20577)
+        #(1, "AC", AC_POWER_REAL, 1, 3, -1), # diversity factor 0.35
+        (1, "HP", HEAT_PUMP_POWER, 1, 3, -1), # 58.8A (24443) on spec, otherwise 14.5 blower, 5.4 fan, 34.6 compressor = 54.5A (22656)
+        #(1, "HP", HEAT_PUMP_POWER, 1, 3, -1), # diversity factor 0.35
+        (4, "dehumidifiers", 3130, 1, 2, 0),
+        (3, "dehumidifiers", 3130, 1, 2, 1),
+        (3, "dehumidifiers", 3130, 1, 2, 2),
+        (1, "receptacle", 360, 0, 1, 0)
+    ]
+)
+
+HVAC_1 = Panel(
+    name = "HVAC",
+    limit_to_results_under = 300,
+    # VARIABLE CIRCUITS
+    # (count, label, voltAmps, is_motor, poles, assignment)
+    variable_circuits = [
+        (2, "AC", 22365, 1, 3, -1),
+        (1, "HP", 24443, 1, 3, -1),
+        (5, "dehumidifiers", 3130, 1, 2, -1),
+        (1, "receptacle", 360, 0, 1, -1)
+    ],
+    # RESTRICTED CIRCUITS
+    restricted_circuits = [
+        ##### this is the as-designed version with more realistic loads for the ACs:
+        # (3, "AC", 22365, 1, 3, -1),
+        # (2, "AC", 22365*.35, 1, 3, -1), # diversity factor 0.35
+        # (1, "HP", 24443, 1, 3, -1),
+        # (1, "HP", 24443*.35, 1, 3, -1), # diversity factor 0.35
         # (4, "dehumidifiers", 3130, 1, 2, 0),
         # (3, "dehumidifiers", 3130, 1, 2, 1),
         # (3, "dehumidifiers", 3130, 1, 2, 2),
         # (1, "receptacle", 360, 0, 1, 1)
-        ##### this is the as-designed version with more realistic loads for the ACs:
-        (3, "AC", 18955.6, 1, 3, -1),
-        #(2, "AC", 18955.6*.35, 1, 3, -1), # diversity factor 0.35
-        (1, "HP", 9228.4, 1, 3, -1),
-        #(1, "HP", 9228.4*.35, 1, 3, -1), # diversity factor 0.35
-        (4, "dehumidifiers", 3130, 1, 2, 0),
-        (3, "dehumidifiers", 3130, 1, 2, 1),
-        (3, "dehumidifiers", 3130, 1, 2, 2),
-        (1, "receptacle", 360, 0, 1, 1)
         ##### this is the reorganized version:
-        # (4, "AC", 4530, 1, 3, -1),
-        # (2, "HP", 6027, 1, 3, -1),
+        # (3, "AC", 22365, 1, 3, -1),
+        # #(1, "AC", 22365, 1, 3, -1), # diversity factor cancellation
+        # (1, "HP", 17584, 1, 3, -1),  # 7.5 ton
+        # #(1, "HP", 24443, 1, 3, -1), #diversity factor cancellation
         # (4, "dehumidifiers", 3130, 1, 2, 0),
         # (4, "dehumidifiers", 3130, 1, 2, 1),
         # (2, "dehumidifiers", 3130, 1, 2, 2),
         # (1, "receptacle", 360, 0, 1, 1)
     ],
     as_built_circuits = [
-        (3, "AC", 22365, 1, 3, -1), # 53.8 on spec (22365), otherwise 10.9 blower, 4.0 fan, 34.6 comp = 49.5 (20577)
-        (1, "AC", 22365, 1, 3, -1), # diversity factor 0.35
-        (1, "HP", 24443, 1, 3, -1), # 58.8A (24443) on spec, otherwise 14.5 blower, 5.4 fan, 34.6 compressor = 54.5A (22656)
-        (1, "HP", 24443, 1, 3, -1), # diversity factor 0.35
-        (4, "dehumidifiers", 3130, 1, 2, 0),
-        (3, "dehumidifiers", 3130, 1, 2, 1),
-        (3, "dehumidifiers", 3130, 1, 2, 2),
-        (1, "receptacle", 360, 0, 1, 1)
+    ]
+)
+
+HVAC_2 = Panel(
+    name = "HVAC",
+    limit_to_results_under = 300,
+    # VARIABLE CIRCUITS
+    # (count, label, voltAmps, is_motor, poles, assignment)
+    variable_circuits = [
+        (1, "AC", 22365, 1, 3, -1),
+        #(1, "HP", 24443, 1, 3, -1),
+        (5, "dehumidifiers", 3130, 1, 2, -1),
+        (1, "receptacle", 360, 0, 1, -1)
+    ],
+    # RESTRICTED CIRCUITS
+    restricted_circuits = [
+        ##### this is the as-designed version with more realistic loads for the ACs:
+        # (3, "AC", 22365, 1, 3, -1),
+        # (2, "AC", 22365*.35, 1, 3, -1), # diversity factor 0.35
+        # (1, "HP", 24443, 1, 3, -1),
+        # (1, "HP", 24443*.35, 1, 3, -1), # diversity factor 0.35
+        # (4, "dehumidifiers", 3130, 1, 2, 0),
+        # (3, "dehumidifiers", 3130, 1, 2, 1),
+        # (3, "dehumidifiers", 3130, 1, 2, 2),
+        # (1, "receptacle", 360, 0, 1, 1)
+        ##### this is the reorganized version:
+        # (3, "AC", 22365, 1, 3, -1),
+        # #(1, "AC", 22365, 1, 3, -1), # diversity factor cancellation
+        # (1, "HP", 17584, 1, 3, -1),  # 7.5 ton
+        # #(1, "HP", 24443, 1, 3, -1), #diversity factor cancellation
+        # (4, "dehumidifiers", 3130, 1, 2, 0),
+        # (4, "dehumidifiers", 3130, 1, 2, 1),
+        # (2, "dehumidifiers", 3130, 1, 2, 2),
+        # (1, "receptacle", 360, 0, 1, 1)
+    ],
+    as_built_circuits = [
     ]
 )
 
@@ -395,7 +488,7 @@ F1 = Panel(
     # VARIABLE CIRCUITS
     # (count, label, voltAmps, is_motor, poles, assignment)
     variable_circuits = [
-        # (10, "Rack Lights", 5040, 0, 2, -1),
+        # (10, "Rack Lights", LIGHT_WATTAGE * 8, 0, 2, -1),
         # (5, "Rack Receptacles", 2160, 0, 1, -1),
         # (1, "co2 controller", 180, 0, 1, -1),
         # (1, "general lighting", 280, 0, 1, -1),
@@ -406,33 +499,22 @@ F1 = Panel(
     # RESTRICTED CIRCUITS
     # 157.4183 : solution I chose RL(4, 0, 0)  RL(0, 4, 0)  RL(0, 0, 2)  RR(3, 0)  RR(0, 2)  CC(0, 1)  GL(0, 1)  GR(0, 1)  SP(0, 1)  CPF(0, 1, 0)  
     restricted_circuits = [
-    # AS-BUILT:
-        (4, "Rack Lights", 5040, 0, 2, PA),
-        (2, "Rack Lights", 5040, 0, 2, PB),
-        (4, "Rack Lights", 5040, 0, 2, PC),
-        (2, "Rack Receptacles", 2160, 0, 1, AN),
-        (3, "Rack Receptacles", 2160, 0, 1, CN),
-        (1, "co2 controller", 180, 0, 1, AN),
-        (1, "general lighting", 280, 0, 1, AN),
-        (1, "general receptacles", 360, 0, 1, CN),
-        (1, "sump pump", 600, 1, 1, CN),
-        (1, "co2 purge fan", 1284, 1, 2, PB)
     ## REORGANIZED
-        # (4, "Rack Lights", 5040, 0, 2, 0),
-        # (4, "Rack Lights", 5040, 0, 2, 1),
-        # (2, "Rack Lights", 5040, 0, 2, 2),
-        # (3, "Rack Receptacles", 2160, 0, 1, 0),
-        # (2, "Rack Receptacles", 2160, 0, 1, 1),
-        # (1, "co2 controller", 180, 0, 1, 1),
-        # (1, "general lighting", 280, 0, 1, 1),
-        # (1, "general receptacles", 360, 0, 1, 1),
-        # (1, "sump pump", 600, 1, 1, 1),
-        # (1, "co2 purge fan", 1284, 1, 2, 1),
+        (4, "Rack Lights", LIGHT_WATTAGE * 8, 0, 2, 0),
+        (4, "Rack Lights", LIGHT_WATTAGE * 8, 0, 2, 1),
+        (2, "Rack Lights", LIGHT_WATTAGE * 8, 0, 2, 2),
+        (3, "Rack Receptacles", 2160, 0, 1, 0),
+        (2, "Rack Receptacles", 2160, 0, 1, 1),
+        (1, "co2 controller", 180, 0, 1, 1),
+        (1, "general lighting", 280, 0, 1, 1),
+        (1, "general receptacles", 360, 0, 1, 1),
+        (1, "sump pump", 600, 1, 1, 1),
+        (1, "co2 purge fan", 1284, 1, 2, 1),
     ],
     as_built_circuits = [
-        (4, "Rack Lights", 5040, 0, 2, PA),
-        (2, "Rack Lights", 5040, 0, 2, PB),
-        (4, "Rack Lights", 5040, 0, 2, PC),
+        (4, "Rack Lights", LIGHT_WATTAGE * 8, 0, 2, PA),
+        (2, "Rack Lights", LIGHT_WATTAGE * 8, 0, 2, PB),
+        (4, "Rack Lights", LIGHT_WATTAGE * 8, 0, 2, PC),
         (2, "Rack Receptacles", 2160, 0, 1, AN),
         (3, "Rack Receptacles", 2160, 0, 1, CN),
         (1, "co2 controller", 180, 0, 1, AN),
@@ -449,6 +531,7 @@ F1_NoLights = Panel(
     # VARIABLE CIRCUITS
     # (count, label, voltAmps, is_motor, poles, assignment)
     variable_circuits = [
+        # (10, "Rack Lights", 5040, 0, 2, -1), diversity factor cancellation
         # (5, "Rack Receptacles", 2160, 0, 1, -1),
         # (1, "co2 controller", 180, 0, 1, -1),
         # (1, "general lighting", 280, 0, 1, -1),
@@ -459,25 +542,17 @@ F1_NoLights = Panel(
     # RESTRICTED CIRCUITS
     # 157.4183 : solution I chose RL(4, 0, 0)  RL(0, 4, 0)  RL(0, 0, 2)  RR(3, 0)  RR(0, 2)  CC(0, 1)  GL(0, 1)  GR(0, 1)  SP(0, 1)  CPF(0, 1, 0)  
     restricted_circuits = [
-    # AS-BUILT:
-        # (4, "Rack Lights", 5040, 0, 2, PA),
-        # (2, "Rack Lights", 5040, 0, 2, PB),
-        # (4, "Rack Lights", 5040, 0, 2, PC),
-        (2, "Rack Receptacles", 2160, 0, 1, AN),
-        (3, "Rack Receptacles", 2160, 0, 1, CN),
-        (1, "co2 controller", 180, 0, 1, AN),
-        (1, "general lighting", 280, 0, 1, AN),
-        (1, "general receptacles", 360, 0, 1, CN),
-        (1, "sump pump", 600, 1, 1, CN),
-        (1, "co2 purge fan", 1284, 1, 2, PB)
     # reorganized
-        # (3, "Rack Receptacles", 2160, 0, 1, 0),
-        # (2, "Rack Receptacles", 2160, 0, 1, 1),
-        # (1, "co2 controller", 180, 0, 1, 1),
-        # (1, "general lighting", 280, 0, 1, 1),
-        # (1, "general receptacles", 360, 0, 1, 1),
-        # (1, "sump pump", 600, 1, 1, 1),
-        # (1, "co2 purge fan", 1284, 1, 2, 1),
+        # (4, "Rack Lights", 5040, 0, 2, 0), diversity factor cancellation
+        # (4, "Rack Lights", 5040, 0, 2, 1), diversity factor cancellation
+        # (2, "Rack Lights", 5040, 0, 2, 2), diversity factor cancellation
+        (3, "Rack Receptacles", 2160, 0, 1, 0),
+        (2, "Rack Receptacles", 2160, 0, 1, 1),
+        (1, "co2 controller", 180, 0, 1, 1),
+        (1, "general lighting", 280, 0, 1, 1),
+        (1, "general receptacles", 360, 0, 1, 1),
+        (1, "sump pump", 600, 1, 1, 1),
+        (1, "co2 purge fan", 1284, 1, 2, 1),
     ],
     as_built_circuits = [
         #(4, "Rack Lights", 5040, 0, 2, PA),
@@ -499,12 +574,12 @@ VEG = Panel(
     # VARIABLE CIRCUITS
     # (count, label, voltAmps, is_motor, poles, assignment)
     variable_circuits = [
-        # (8, "Rack Lights", 2520, 0, 2, -1),
+        # (8, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, -1),
         # (2, "Rack Receptacles", 2160, 0, 1, -1),
 
         # (2, "Quest Dehus", 2700, 1, 2, -1),
-        # (1, "Excel", 6666.6667, 1, 3, -1),
-        # (1, "Daikin", 3063.8298, 1, 3, -1),
+        # (1, "Excel", 2841*3, 1, 3, -1),
+        # (1, "Daikin", 3634*3, 1, 3, -1),
 
         # (1, "wall receptacle", 360, 0, 1, -1),
         # (1, "door receptacle", 360, 0, 1, -1),
@@ -514,50 +589,50 @@ VEG = Panel(
     # RESTRICTED CIRCUITS
     # 104.523 : solution I chose RL(4, 0, 0)  RL(0, 2, 0)  RL(0, 0, 2)  RR(1, 0)  RR(0, 1)  QD(0, 2, 0)  E(1, 1, 1)  D(1, 1, 1)  WR(0, 1)  DR(0, 1)  SP(1, 0)  WL(1, 0)
     restricted_circuits = [
-    # as planned
-        (4, "Rack Lights", 2520, 0, 2, 0),
-        (2, "Rack Lights", 2520, 0, 2, 1),
-        (2, "Rack Lights", 2520, 0, 2, 2),
-
-        (1, "Rack Receptacles", 2160, 0, 1, 0),
-        (1, "Rack Receptacles", 2160, 0, 1, 0),
-
-        (2, "Quest Dehus", 2700, 1, 2, 1),
-        (1, "Excel", 6666.6667, 1, 3, -1),
-        (1, "Daikin", 3063.8298, 1, 3, -1),
-
-        (1, "wall receptacle", 360, 0, 1, 1),
-        (1, "door receptacle", 360, 0, 1, 1),
-        (1, "sump pump", 600, 1, 1, 0),
-        (1, "work lights", 360, 0, 1, 0),
-    # reorganized
-        # (4, "Rack Lights", 2520, 0, 2, 0),
-        # (2, "Rack Lights", 2520, 0, 2, 1),
-        # (2, "Rack Lights", 2520, 0, 2, 2),
+    # reorganized CAB
+        # (4, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 0),
+        # (2, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 1),
+        # (2, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 2),
 
         # (1, "Rack Receptacles", 2160, 0, 1, 0),
         # (1, "Rack Receptacles", 2160, 0, 1, 1),
 
         # (2, "Quest Dehus", 2700, 1, 2, 1),
-        # (1, "Excel", 6666.6667, 1, 3, -1),
-        # (1, "Daikin", 3063.8298, 1, 3, -1),
+        # (1, "Excel", 2841*3, 1, 3, -1),
+        # (1, "Daikin", 3634*3, 1, 3, -1),
 
         # (1, "wall receptacle", 360, 0, 1, 1),
         # (1, "door receptacle", 360, 0, 1, 1),
         # (1, "sump pump", 600, 1, 1, 0),
         # (1, "work lights", 360, 0, 1, 0),
+        # reorganized ABC
+        (4, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 0),
+        (2, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 1),
+        (2, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 2),
+
+        (1, "Rack Receptacles", 2160, 0, 1, 0),
+        (1, "Rack Receptacles", 2160, 0, 1, 1),
+
+        (2, "Quest Dehus", 2700, 1, 2, 1),
+        (1, "Excel", 2841*3, 1, 3, -1),
+        (1, "Daikin", 3634*3, 1, 3, -1),
+
+        (1, "wall receptacle", 360, 0, 1, 0),
+        (1, "door receptacle", 360, 0, 1, 1),
+        (1, "sump pump", 600, 1, 1, 0),
+        (1, "work lights", 360, 0, 1, 1),
     ],
     as_built_circuits = [
-        (4, "Rack Lights", 2520, 0, 2, 0),
-        (2, "Rack Lights", 2520, 0, 2, 1),
-        (2, "Rack Lights", 2520, 0, 2, 2),
+        (4, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 0),
+        (2, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 1),
+        (2, "Rack Lights", LIGHT_WATTAGE * 4, 0, 2, 2),
 
         (1, "Rack Receptacles", 2160, 0, 1, 0),
         (1, "Rack Receptacles", 2160, 0, 1, 0),
 
         (2, "Quest Dehus", 2700, 1, 2, 1),
-        (1, "Excel", 6666.6667, 1, 3, -1),
-        (1, "Daikin", 3063.8298, 1, 3, -1),
+        (1, "Excel", 2841*3, 1, 3, -1),
+        (1, "Daikin", 3634*3, 1, 3, -1),
 
         (1, "wall receptacle", 360, 0, 1, 1),
         (1, "door receptacle", 360, 0, 1, 0),
@@ -807,9 +882,20 @@ def display_room_menu():
         6: ("VEG", VEG),
         7: ("GARAGE", GARAGE),
         8: ("All Rooms", "ALL"),
-        9: ("Tester", TESTER)
+        9: ("Tester", TESTER),
+        #10:("HVAC_1", HVAC_1),
+        #11:("HVAC_1", HVAC_2)
     }
     
+
+    # choice = input("\nUse As-Built? (y/N): ")
+    
+    # if choice == 'y' or choice == 'Y':  # as built selected
+    #     USE_AS_BUILT = True
+    # else:
+    #     USE_AS_BUILT = False
+                
+
     while True:
         # Display menu
         print("\nAvailable Rooms:")
